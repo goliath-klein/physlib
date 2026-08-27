@@ -150,13 +150,22 @@ theorem isSelfAdjoint_apply_of_isSelfAdjoint (f : A₁ →ₚ[ℂ] A₂) {x : A�
   rw [← CFC.posPart_sub_negPart x, isSelfAdjoint_iff, map_sub, star_sub,
     (f.map_nonneg (CFC.posPart_nonneg x)).star_eq, (f.map_nonneg (CFC.negPart_nonneg x)).star_eq]
 
+#check OrderHom.Subtype.val
+
 /-- A positive linear map defines a linear map between self-adjoint elements -/
 @[simps! (attr := norm_cast)]
-noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₗ[ℝ] selfAdjoint A₂ where
+noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ where
   toFun x := ⟨f x, by
     simp [selfAdjoint.mem_iff, ← isSelfAdjoint_iff, isSelfAdjoint_apply_of_isSelfAdjoint]⟩
   map_add' := by simp
   map_smul' m x := by ext; simp
+  monotone' a b hab := by
+    simp only [Subtype.mk_le_mk]
+
+    sorry
+
+
+
 
 section Complex
 
