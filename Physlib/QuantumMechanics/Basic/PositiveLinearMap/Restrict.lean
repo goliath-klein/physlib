@@ -61,37 +61,30 @@ open selfAdjoint
 attribute [simp] IsSelfAdjoint.map
 
 /-- A positive linear map defines a positive linear map between self-adjoint elements -/
-noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ :=
+noncomputable def restrictSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ :=
   submodulePLM.comp <| (f.restrict (by simp_all)).comp <| submodulePLM_symm ℝ
 
 @[simp, norm_cast]
-theorem coe_restrSelfadjoint_apply (f : A₁ →ₚ[ℂ] A₂) (x : selfAdjoint A₁) :
-    ↑(f.restrSelfadjoint x) = f ↑x := by
-  simp [restrSelfadjoint]
+theorem coe_restrictSelfadjoint_apply (f : A₁ →ₚ[ℂ] A₂) (x : selfAdjoint A₁) :
+    ↑(f.restrictSelfadjoint x) = f ↑x := by
+  simp [restrictSelfadjoint]
 
 section Complex
 
 open Complex ComplexOrder
 
-/-- The map from self-adjoint complex numbers to real numbers as a unital positive linear map. -/
-@[simps!]
-noncomputable def _root_.Complex.selfAdjointUPLM : selfAdjoint ℂ →ₚ₁[ℝ] ℝ where
-  toLinearMap := Complex.selfAdjointEquiv.toLinearMap
-  monotone' a b hab := by simp; gcongr
-  map_one' := by simp
-
 /-- A positive linear map into `ℂ` defines a positive linear map from the
 self-adjoint elements to `ℝ` -/
-noncomputable def restrSelfadjointComplex (f : A₁ →ₚ[ℂ] ℂ) : selfAdjoint A₁ →ₚ[ℝ] ℝ :=
-  Complex.selfAdjointUPLM.toPositiveLinearMap.comp f.restrSelfadjoint
+noncomputable def restrictSelfadjointComplex (f : A₁ →ₚ[ℂ] ℂ) : selfAdjoint A₁ →ₚ[ℝ] ℝ :=
+  Complex.selfAdjointUPLM.toPositiveLinearMap.comp f.restrictSelfadjoint
 
 @[simp, norm_cast]
-theorem coe_restrSelfadjointComplex_apply (f : A₁ →ₚ[ℂ] ℂ) (x : selfAdjoint A₁) :
-    (f.restrSelfadjointComplex x : ℂ) = f (x : A₁) := by
+theorem coe_restrictSelfadjointComplex_apply (f : A₁ →ₚ[ℂ] ℂ) (x : selfAdjoint A₁) :
+    (f.restrictSelfadjointComplex x : ℂ) = f (x : A₁) := by
   have : starRingEnd ℂ (f x) = f x := by
     rw [← star_def, ← isSelfAdjoint_iff]
     exact IsSelfAdjoint.map isSelfAdjoint f
-  simpa [restrSelfadjointComplex] using (conj_eq_iff_re.mp this)
+  simpa [restrictSelfadjointComplex] using (conj_eq_iff_re.mp this)
 
 end Complex
 
@@ -108,28 +101,31 @@ variable (f : A₁ →ₚ₁[ℂ] A₂)
 
 /-- A unital positive linear map defines a unital positive linear map between
 self-adjoint elements -/
-noncomputable def restrSelfadjoint (f : A₁ →ₚ₁[ℂ] A₂) : selfAdjoint A₁ →ₚ₁[ℝ] selfAdjoint A₂ :=
+noncomputable def restrictSelfadjoint (f : A₁ →ₚ₁[ℂ] A₂) : selfAdjoint A₁ →ₚ₁[ℝ] selfAdjoint A₂ :=
   submoduleUPLM.comp <| (f.restrict val_one val_one (by simp_all)).comp <| submoduleUPLM_symm ℝ
 
 @[simp, norm_cast]
-theorem coe_restrSelfadjoint_apply (f : A₁ →ₚ₁[ℂ] A₂) (x : selfAdjoint A₁) :
-    ↑(f.restrSelfadjoint x) = f ↑x := by
-  simp [restrSelfadjoint]
+theorem coe_restrictSelfadjoint_apply (f : A₁ →ₚ₁[ℂ] A₂) (x : selfAdjoint A₁) :
+    ↑(f.restrictSelfadjoint x) = f ↑x := by
+  simp [restrictSelfadjoint]
 
 open Complex ComplexOrder
 
 /-- A unital positive linear map into `ℂ` defines a unital positive linear map from the
 self-adjoint elements to `ℝ` -/
-noncomputable def restrSelfadjointComplex (f : A₁ →ₚ₁[ℂ] ℂ) : selfAdjoint A₁ →ₚ₁[ℝ] ℝ :=
-  Complex.selfAdjointUPLM.comp f.restrSelfadjoint
+noncomputable def restrictSelfadjointComplex (f : A₁ →ₚ₁[ℂ] ℂ) : selfAdjoint A₁ →ₚ₁[ℝ] ℝ :=
+  Complex.selfAdjointUPLM.comp f.restrictSelfadjoint
 
 @[simp, norm_cast]
-theorem coe_restrSelfadjointComplex_apply (f : A₁ →ₚ₁[ℂ] ℂ) (x : selfAdjoint A₁) :
-    (f.restrSelfadjointComplex x : ℂ) = f (x : A₁) := by
+theorem coe_restrictSelfadjointComplex_apply (f : A₁ →ₚ₁[ℂ] ℂ) (x : selfAdjoint A₁) :
+    (f.restrictSelfadjointComplex x : ℂ) = f (x : A₁) := by
   have : starRingEnd ℂ (f x) = f x := by
     rw [← star_def, ← isSelfAdjoint_iff]
     exact IsSelfAdjoint.map isSelfAdjoint f
-  simpa [restrSelfadjointComplex] using (conj_eq_iff_re.mp this)
+  simpa [restrictSelfadjointComplex] using (conj_eq_iff_re.mp this)
+
+/-- State space of a C^* algebra -/
+notation " S[" A₁ "] " => A₁ →ₚ₁[ℂ] ℂ
 
 end UnitalPositiveLinearMap
 

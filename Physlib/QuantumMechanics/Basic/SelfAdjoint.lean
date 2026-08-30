@@ -5,6 +5,8 @@ Authors: David Gross
 -/
 module
 
+public import Mathlib.Analysis.RCLike.Basic
+public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Algebra.Star.Module
 public import Physlib.QuantumMechanics.Basic.PositiveLinearMap.Unital
 
@@ -82,3 +84,12 @@ def submoduleUPLM_symm : selfAdjoint A →ₚ₁[R] submodule R A :=
   { submoduleEquiv.symm.toLinearMap with monotone' a b hab := by simpa, map_one' := by simp }
 
 end selfAdjoint
+
+open Complex ComplexOrder
+
+/-- The map from self-adjoint complex numbers to real numbers as a unital positive linear map. -/
+@[simps!]
+noncomputable def Complex.selfAdjointUPLM : selfAdjoint ℂ →ₚ₁[ℝ] ℝ where
+  toLinearMap := Complex.selfAdjointEquiv.toLinearMap
+  monotone' a b hab := by simp; gcongr
+  map_one' := by simp

@@ -384,7 +384,7 @@ lemma _root_.RCLike.instOrderClosed : OrderClosedTopology 𝕜 where
     simp_rw [Set.ofPred_and]
     refine IsClosed.inter (isClosed_le ?_ ?_) (isClosed_eq ?_ ?_) <;> continuity
 
-scoped[ComplexOrder] attribute [instance] RCLike.instOrderClosed
+] attribute [instance] RCLike.instOrderClosed
 
 variable (A B : HermitianMat d 𝕜)
 
