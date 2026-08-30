@@ -15,7 +15,6 @@ TBD
 
 @[expose] public section
 
-
 -- The following is adapted from the Mathlib theory of `PositiveLinearMap`
 section UnitalPositiveLinearMap
 
@@ -133,6 +132,41 @@ end general
 
 end UnitalPositiveLinearMap
 
+section Subtype
+
+namespace PositiveLinearMap
+
+variable {R E₁ E₂ : Type*} [Semiring R]
+    [AddCommMonoid E₁] [PartialOrder E₁] [AddCommMonoid E₂] [PartialOrder E₂]
+    [Module R E₁] [Module R E₂]
+
+section tst
+
+/-- Linear version of `OrderHom.Subtype.val` -/
+@[simps -fullyApplied]
+def Submodule.val (S : Submodule R E₁) : S →ₚ[R] E₁ where
+  toOrderHom := OrderHom.Subtype.val (· ∈ S)
+  map_add' := by simp
+  map_smul' := by simp
+
+variable {S : Type*} [Semiring S]
+
+
+def Submodule.xxx (f : E₁ →ₚ[R] E₂) (S : Submodule R E₁) (T : Submodule R E₂) (h : ∀ s : S,  ) :
+
+variable (S : Submodule R E₁) (s : S)
+
+#check (s : E₁)
+#synth PartialOrder S
+
+#check OrderHom.Subtype.val
+#check PositiveLinearMap.Submodule.val S
+
+end tst
+
+#check Submodule
+
+end Subtype.PositiveLinearMap
 
 section CStarAlgebra
 
@@ -150,7 +184,6 @@ theorem isSelfAdjoint_apply_of_isSelfAdjoint (f : A₁ →ₚ[ℂ] A₂) {x : A�
   rw [← CFC.posPart_sub_negPart x, isSelfAdjoint_iff, map_sub, star_sub,
     (f.map_nonneg (CFC.posPart_nonneg x)).star_eq, (f.map_nonneg (CFC.negPart_nonneg x)).star_eq]
 
-#check OrderHom.Subtype.val
 
 /-- A positive linear map defines a linear map between self-adjoint elements -/
 @[simps! (attr := norm_cast)]
@@ -164,7 +197,8 @@ noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A�
 
     sorry
 
-
+#synth Module ℝ A₁
+#synth Module ℝ (selfAdjoint A₁)
 
 
 section Complex
