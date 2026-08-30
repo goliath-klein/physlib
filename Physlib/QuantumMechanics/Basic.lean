@@ -111,7 +111,10 @@ def comp (g : E₂ →ₚ₁[R] E₃) (f : E₁ →ₚ₁[R] E₂) : E₁ →ₚ
 @[simp] lemma comp_id (f : E₁ →ₚ₁[R] E₂) : f.comp (.id R E₁) = f := rfl
 @[simp] lemma id_comp (f : E₁ →ₚ₁[R] E₂) : (UnitalPositiveLinearMap.id R E₂).comp f = f := rfl
 
--- TBD: `map_smul_of_tower`
+@[simp]
+lemma map_smul_of_tower {S : Type*} [SMul S E₁] [SMul S E₂]
+    [LinearMap.CompatibleSMul E₁ E₂ S R] (f : E₁ →ₚ₁[R] E₂) (c : S) (x : E₁) :
+    f (c • x) = c • f x := LinearMapClass.map_smul_of_tower f _ _
 
 @[aesop safe apply (rule_sets := [CStarAlgebra])]
 protected lemma map_nonneg (f : E₁ →ₚ₁[R] E₂) {x : E₁} (hx : 0 ≤ x) : 0 ≤ f x :=
