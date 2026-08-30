@@ -153,7 +153,7 @@ def PositiveLinearMap.restrict (f : E₁ →ₚ[R] E₂) {F₁ : Submodule S E�
 variable [One E₁] [One E₂]
 
 @[simps!]
-def UnitalPositiveLinearMap.restrict (f : E₁ →ₚ₁[R] E₂) (F₁ : Submodule S E₁) (F₂ : Submodule S E₂)
+def UnitalPositiveLinearMap.restrict (f : E₁ →ₚ₁[R] E₂) {F₁ : Submodule S E₁} {F₂ : Submodule S E₂}
     [One F₁] [One F₂] (h₁ : ↑(1 : F₁) = (1 : E₁)) (h₂ : ↑(1 : F₂) = (1 : E₂))
     (h : ∀ ⦃x⦄, x ∈ F₁ → f x ∈ F₂) : F₁ →ₚ₁[S] F₂ where
   toPositiveLinearMap := f.toPositiveLinearMap.restrict h
@@ -215,6 +215,7 @@ variable [PartialOrder A]
 def submoduleUPLM : submodule R A →ₚ₁[R] selfAdjoint A :=
   { submoduleEquiv.toLinearMap with monotone' a b hab := by simpa, map_one' := by simp }
 
+variable (R) in
 /-- Inverse of `submoduleUPLM`. (There is no `UnitalPositiveLinearEquivalence` type) -/
 @[simps!]
 def submoduleUPLM_symm : selfAdjoint A →ₚ₁[R] submodule R A :=
@@ -234,9 +235,10 @@ variable [NonUnitalCStarAlgebra A₁] [NonUnitalCStarAlgebra A₂] [PartialOrder
   [StarOrderedRing A₁] [PartialOrder A₂] [StarOrderedRing A₂]
 
 
--- TBD: The proof uses `CFC.posPart_sub_negPart x : x⁺ - x⁻ = x`, which should
--- hold in any ordered vector space where the order cone is full-dimensional.
--- For now, state this only for C^* algebras.
+-- TBD: The proof uses `x⁺ - x⁻ = x`. This holds for every ordered vector space where the
+-- order cone is full-dimensional. But as far as I can see, Mathlib has the statement only
+-- for C^* algebras (`CFC.posPart_sub_negPart x`). For the time being, we state it in that
+-- setting.
 /-- Positive linear maps preserve self-adjoint elements of a C^* algebra. -/
 @[simp]
 theorem isSelfAdjoint_apply_of_isSelfAdjoint (f : A₁ →ₚ[ℂ] A₂) {x : A₁} (hx : IsSelfAdjoint x) :
@@ -244,83 +246,39 @@ theorem isSelfAdjoint_apply_of_isSelfAdjoint (f : A₁ →ₚ[ℂ] A₂) {x : A�
   rw [isSelfAdjoint_iff, ← CFC.posPart_sub_negPart x, map_sub, star_sub,
     (f.map_nonneg (CFC.posPart_nonneg x)).star_eq, (f.map_nonneg (CFC.negPart_nonneg x)).star_eq]
 
+-- theorem isSelfAdjoint_apply_of_isSelfAdjoint'
+--   {F : Type*} [FunLike F A₁ A₂] [StarHomClass F A₁ A₂] (f : F)
+--   {x : A₁} (hx : IsSelfAdjoint x) :
+--     IsSelfAdjoint (f x) := by
+--   rw [isSelfAdjoint_iff, ← CFC.posPart_sub_negPart x, map_sub, star_sub,
+--     (f.map_nonneg (CFC.posPart_nonneg x)).star_eq, (f.map_nonneg (CFC.negPart_nonneg x)).star_eq]
+
 open selfAdjoint
 
-/-- A positive linear map defines a linear map between self-adjoint elements -/
+/-- A positive linear map defines a positive linear map between self-adjoint elements -/
 noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ :=
   submodulePLM.comp <| (f.restrict (by simp_all)).comp <| submodulePLM_symm ℝ
 
 @[simp, norm_cast]
 theorem coe_restrSelfadjoint_apply (f : A₁ →ₚ[ℂ] A₂) (x : selfAdjoint A₁) :
-    ((f.restrSelfadjoint x) : A₂) = f (x : A₁) := by
+    ↑(f.restrSelfadjoint x) = f ↑x := by
   simp [restrSelfadjoint]
-
-
--- /-- Positive linear maps preserve self-adjoint elements of a C^* algebra. -/
--- theorem mem_selfAdjoint_apply_of_mem_selfAdjoint (f : A₁ →ₚ[ℂ] A₂) {x : A₁} (hx : x ∈ selfAdjoint A₁) :
---     (f x) ∈ selfAdjoint A₂ := by
---   have := isSelfAdjoint_apply_of_isSelfAdjoint f ((isSelfAdjoint_iff_mem_selfAdjoint x).mpr hx)
---   simpa -- TBD
---
--- theorem mem_selfAdjoint_apply (f : A₁ →ₚ[ℂ] A₂) (x : selfAdjoint A₁) :
---     (f x) ∈ selfAdjoint A₂ := by
---       sorry
---
--- #check selfAdjoint.submodule ℝ A₁
--- #synth Module ℝ (selfAdjoint A₂)
--- #check selfAdjoint A₁.toSubmodule
--- #check LinearMap
---
--- theorem xyz (f : A₁ →ₚ[ℂ] A₂) :
---   ∀ x ∈ selfAdjoint.submodule ℝ A₁, f x ∈ selfAdjoint.submodule ℝ A₂ := by  sorry
---
--- theorem xyz' (f : A₁ →ₚ[ℂ] A₂) (x : A₁) (hx : x ∈ selfAdjoint.submodule ℝ A₁) :
---   f x ∈ selfAdjoint.submodule ℝ A₂ := by  sorry
---
--- #check xyz
--- #check xyz'
---
--- variable (f : A₁ →ₚ[ℂ] A₂)
---
--- #check f.restrict f.xyz
--- #check f.restrict f.xyz'
-
-
-theorem xxx (f : A₁ →ₚ[ℂ] A₂) : ∀ x ∈ selfAdjoint A₁, f x ∈ selfAdjoint A₂ := by
-  sorry
-
-
-
-/-- A positive linear map defines a linear map between self-adjoint elements -/
-@[simps! (attr := norm_cast)]
-noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ where
-  toFun x := ⟨f x, by
-    simp [selfAdjoint.mem_iff, ← isSelfAdjoint_iff, isSelfAdjoint_apply_of_isSelfAdjoint]⟩
-  map_add' := by simp
-  map_smul' m x := by ext; simp
-  monotone' a b hab := by
-    simp only [Subtype.mk_le_mk]
-    rw [← Submodule.val_apply (S := selfAdjoint A₁) a]
-
-
-    sorry
-
-#synth Module ℝ A₁
-#synth Module ℝ (selfAdjoint A₁)
-
 
 section Complex
 
 open Complex ComplexOrder
 
-/-- A positive linear map into `ℂ` defines a linear map from the self-adjoint elements to `ℝ` -/
-noncomputable def restrSelfadjointComplex (f : A₁ →ₚ[ℂ] ℂ) : selfAdjoint A₁ →ₗ[ℝ] ℝ :=
-  selfAdjointEquiv ∘ₗ f.restrSelfadjoint
+@[simps!]
+noncomputable def Complex.selfAdjointUPLM : selfAdjoint ℂ →ₚ₁[ℝ] ℝ where
+  toLinearMap := Complex.selfAdjointEquiv.toLinearMap
+  monotone' a b hab := by simp; gcongr
+  map_one' := by simp
 
-@[simp, norm_cast]
-theorem coe_restrSelfadjointComplex_apply (f : A₁ →ₚ[ℂ] ℂ) (x : selfAdjoint A₁) :
-    (f.restrSelfadjointComplex x : ℂ) = f (x : A₁) := by
-  simp [-selfAdjointEquiv_apply, restrSelfadjointComplex, coe_selfAdjointEquiv]
+/-- A positive linear map into `ℂ` defines a positive linear map from the
+self-adjoint elements to `ℝ` -/
+@[simps!]
+noncomputable def restrSelfadjointComplex (f : A₁ →ₚ[ℂ] ℂ) : selfAdjoint A₁ →ₚ[ℝ] ℝ :=
+  Complex.selfAdjointUPLM.toPositiveLinearMap.comp f.restrSelfadjoint
 
 end Complex
 
@@ -330,6 +288,28 @@ namespace UnitalPositiveLinearMap
 
 variable [CStarAlgebra A₁] [CStarAlgebra A₂] [PartialOrder A₁] [PartialOrder A₂]
   [StarOrderedRing A₁] [StarOrderedRing A₂]
+
+open selfAdjoint
+
+variable (f : A₁ →ₚ₁[ℂ] A₂)
+
+#check f.restrict val_one
+
+#synth StarHomClass (A₁ →ₚ[ℂ] A₂) A₁ A₂
+
+/-- A positive linear map defines a positive linear map between self-adjoint elements -/
+noncomputable def restrSelfadjoint (f : A₁ →ₚ₁[ℂ] A₂) : selfAdjoint A₁ →ₚ₁[ℝ] selfAdjoint A₂ :=
+  submoduleUPLM.comp <| (f.restrict val_one val_one (by
+    simp_all
+    intro x h
+    exact IsSelfAdjoint.map h f
+
+    )).comp <| submoduleUPLM_symm ℝ
+
+@[simp, norm_cast]
+theorem coe_restrSelfadjoint_apply (f : A₁ →ₚ[ℂ] A₂) (x : selfAdjoint A₁) :
+    ↑(f.restrSelfadjoint x) = f ↑x := by
+  simp [restrSelfadjoint]
 
 #synth One (selfAdjoint A₁)
 
