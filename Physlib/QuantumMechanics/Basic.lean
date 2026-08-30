@@ -135,36 +135,85 @@ end general
 
 end UnitalPositiveLinearMap
 
-section Subtype
+section Restrict
 
-namespace PositiveLinearMap
+variable {R S E₁ E₂ : Type*}
+    [Semiring R] [Semiring S]
+    [AddCommMonoid E₁] [AddCommMonoid E₂]
+    [PartialOrder E₁] [PartialOrder E₂]
+    [Module R E₁] [Module R E₂] [Module S E₁] [Module S E₂]
+    [LinearMap.CompatibleSMul E₁ E₂ S R]
 
-variable {R E₁ E₂ : Type*} [Semiring R]
-    [AddCommMonoid E₁] [PartialOrder E₁] [AddCommMonoid E₂] [PartialOrder E₂]
-    [Module R E₁] [Module R E₂]
-
--- /-- Linear version of `OrderHom.Subtype.val` -/
--- -- @[simps -fullyApplied]
--- def Submodule.val (S : Submodule R E₁) : S →ₚ[R] E₁ where
---   toOrderHom := OrderHom.Subtype.val (· ∈ S)
---   map_add' := by simp
---   map_smul' := by simp
---
--- @[simp]
--- theorem Submodule.coe_val (S : Submodule R E₁) :
---     ⇑(Submodule.val S) = OrderHom.Subtype.val ( · ∈ S) := rfl
---
--- theorem Submodule.val_apply {S : Submodule R E₁} (s : S) : Submodule.val S s = (s : E₁) := by
---   simp
-
-variable {S : Type*} [Semiring S] [Module S E₁] [Module S E₂] [LinearMap.CompatibleSMul E₁ E₂ S R]
-
-def restrict (f : E₁ →ₚ[R] E₂) (F₁ : Submodule S E₁) (F₂ : Submodule S E₂) (h : ∀ x ∈ F₁, f x ∈ F₂) :
-    F₁ →ₚ[S] F₂ where
+@[simps!]
+def PositiveLinearMap.restrict (f : E₁ →ₚ[R] E₂) {F₁ : Submodule S E₁} {F₂ : Submodule S E₂}
+    (h : ∀ ⦃x⦄, x ∈ F₁ → f x ∈ F₂) : F₁ →ₚ[S] F₂ where
   toLinearMap := (f.toLinearMap.restrictScalars S).restrict (by simpa)
   monotone' a b h := f.monotone (by simpa)
 
-end Subtype.PositiveLinearMap
+variable [One E₁] [One E₂]
+
+@[simps!]
+def UnitalPositiveLinearMap.restrict (f : E₁ →ₚ₁[R] E₂) (F₁ : Submodule S E₁) (F₂ : Submodule S E₂)
+    [One F₁] [One F₂] (h₁ : ↑(1 : F₁) = (1 : E₁)) (h₂ : ↑(1 : F₂) = (1 : E₂))
+    (h : ∀ ⦃x⦄, x ∈ F₁ → f x ∈ F₂) : F₁ →ₚ₁[S] F₂ where
+  toPositiveLinearMap := f.toPositiveLinearMap.restrict h
+  map_one' := by
+    ext
+    simp [h₁, h₂]
+
+end Restrict
+
+-- Basic API
+namespace selfAdjoint
+
+@[simp]
+theorem mem_selfAdjoint_iff_isSelfAdjoint {R : Type*} [AddGroup R] [StarAddMonoid R] (x : R) :
+    x ∈ selfAdjoint R ↔ IsSelfAdjoint x := isSelfAdjoint_iff.trans selfAdjoint.mem_iff.symm
+
+variable {R A : Type*} [Semiring R] [StarMul R] [TrivialStar R]
+  [AddCommGroup A] [Module R A] [StarAddMonoid A] [StarModule R A]
+
+/-- The linear equivalence that forgets the `Submodule` structure on the self-adjoint elements. -/
+@[simps!]
+def submoduleEquiv : selfAdjoint.submodule R A ≃ₗ[R] selfAdjoint A :=
+  { Equiv.refl _ with map_add' _ _ := rfl, map_smul' _ _ := rfl }
+
+@[simp]
+theorem submodule_mem_iff {x : A} : (x ∈ submodule R A) ↔ (x ∈ selfAdjoint A) := by
+  rfl
+
+variable [PartialOrder A]
+
+/-- Forgetting the `Submodule` structure as a positive linear map. -/
+def submodulePLM : submodule R A →ₚ[R] selfAdjoint A :=
+  { selfAdjoint.submoduleEquiv.toLinearMap with monotone' a b hab := by simpa }
+
+/-- Inverse of `submodulePLM`. (There is no `PositiveLinearEquivalence` type) -/
+def submodulePLM_symm : selfAdjoint A →ₚ[R] submodule R A:=
+  { selfAdjoint.submoduleEquiv.symm.toLinearMap with monotone' a b hab := by simpa }
+
+variable {R A : Type*} [Semiring R] [StarMul R] [TrivialStar R]
+  [Ring A] [StarRing A] [Module R A] [StarModule R A]
+
+instance : One (submodule R A) :=
+  ⟨⟨1, .one _⟩⟩
+
+@[simp]
+theorem val_one_submodule : ↑(1 : submodule R A) = (1 : selfAdjoint A) :=
+  rfl
+
+variable [PartialOrder A]
+
+/-- Forgetting the `Submodule` structure as a unital positive linear map. -/
+def submoduleUPLM : submodule R A →ₚ₁[R] selfAdjoint A :=
+  { selfAdjoint.submoduleEquiv.toLinearMap with monotone' a b hab := by simpa, map_one' := by simp }
+
+/-- Inverse of `submoduleUPLM`. (There is no `UnitalPositiveLinearEquivalence` type) -/
+def submoduleUPLM_symm : selfAdjoint A →ₚ[R] submodule R A:=
+  { selfAdjoint.submoduleEquiv.symm.toLinearMap with monotone' a b hab := by simpa }
+end selfAdjoint
+
+end UnitalPositiveLinearMap
 
 section CStarAlgebra
 
@@ -175,12 +224,69 @@ namespace PositiveLinearMap
 variable [NonUnitalCStarAlgebra A₁] [NonUnitalCStarAlgebra A₂] [PartialOrder A₁]
   [StarOrderedRing A₁] [PartialOrder A₂] [StarOrderedRing A₂]
 
--- TBD: Does this work in star ordered rings?
+
+-- TBD: The proof uses `CFC.posPart_sub_negPart x : x⁺ - x⁻ = x`, which should
+-- hold in any ordered vector space where the order cone is full-dimensional.
+-- For now, state this only for C^* algebras.
 /-- Positive linear maps preserve self-adjoint elements of a C^* algebra. -/
+@[simp] -- remove?
 theorem isSelfAdjoint_apply_of_isSelfAdjoint (f : A₁ →ₚ[ℂ] A₂) {x : A₁} (hx : IsSelfAdjoint x) :
     IsSelfAdjoint (f x) := by
-  rw [← CFC.posPart_sub_negPart x, isSelfAdjoint_iff, map_sub, star_sub,
+  rw [isSelfAdjoint_iff, ← CFC.posPart_sub_negPart x, map_sub, star_sub,
     (f.map_nonneg (CFC.posPart_nonneg x)).star_eq, (f.map_nonneg (CFC.negPart_nonneg x)).star_eq]
+
+-- remove?
+theorem mem_selfAdjoint_apply_of_selfAdjoint (f : A₁ →ₚ[ℂ] A₂) (x : A₁)
+    (hx : x ∈ selfAdjoint.submodule ℝ A₁) : f x ∈ selfAdjoint.submodule ℝ A₂ := by
+  simp_all -- [isSelfAdjoint_apply_of_isSelfAdjoint]
+
+/-- A positive linear map defines a linear map between self-adjoint elements -/
+@[simps! (attr := norm_cast)]
+noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ :=
+  selfAdjoint.submodulePLM_symm.comp <|
+    (f.restrict f.mem_selfAdjoint_apply_of_selfAdjoint).comp selfAdjoint.submodulePLM
+
+#check restrSelfadjoint_apply_coe
+
+/-- A positive linear map defines a linear map between self-adjoint elements -/
+@[simps! (attr := norm_cast)]
+noncomputable def restrSelfadjoint' (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ :=
+  f.restrict f.mem_selfAdjoint_apply_of_selfAdjoint
+
+
+-- /-- Positive linear maps preserve self-adjoint elements of a C^* algebra. -/
+-- theorem mem_selfAdjoint_apply_of_mem_selfAdjoint (f : A₁ →ₚ[ℂ] A₂) {x : A₁} (hx : x ∈ selfAdjoint A₁) :
+--     (f x) ∈ selfAdjoint A₂ := by
+--   have := isSelfAdjoint_apply_of_isSelfAdjoint f ((isSelfAdjoint_iff_mem_selfAdjoint x).mpr hx)
+--   simpa -- TBD
+--
+-- theorem mem_selfAdjoint_apply (f : A₁ →ₚ[ℂ] A₂) (x : selfAdjoint A₁) :
+--     (f x) ∈ selfAdjoint A₂ := by
+--       sorry
+--
+-- #check selfAdjoint.submodule ℝ A₁
+-- #synth Module ℝ (selfAdjoint A₂)
+-- #check selfAdjoint A₁.toSubmodule
+-- #check LinearMap
+--
+-- theorem xyz (f : A₁ →ₚ[ℂ] A₂) :
+--   ∀ x ∈ selfAdjoint.submodule ℝ A₁, f x ∈ selfAdjoint.submodule ℝ A₂ := by  sorry
+--
+-- theorem xyz' (f : A₁ →ₚ[ℂ] A₂) (x : A₁) (hx : x ∈ selfAdjoint.submodule ℝ A₁) :
+--   f x ∈ selfAdjoint.submodule ℝ A₂ := by  sorry
+--
+-- #check xyz
+-- #check xyz'
+--
+-- variable (f : A₁ →ₚ[ℂ] A₂)
+--
+-- #check f.restrict f.xyz
+-- #check f.restrict f.xyz'
+
+
+theorem xxx (f : A₁ →ₚ[ℂ] A₂) : ∀ x ∈ selfAdjoint A₁, f x ∈ selfAdjoint A₂ := by
+  sorry
+
 
 
 /-- A positive linear map defines a linear map between self-adjoint elements -/
@@ -223,6 +329,8 @@ namespace UnitalPositiveLinearMap
 variable [CStarAlgebra A₁] [CStarAlgebra A₂] [PartialOrder A₁] [PartialOrder A₂]
   [StarOrderedRing A₁] [StarOrderedRing A₂]
 
+#synth One (selfAdjoint A₁)
+
 @[simps! (attr := norm_cast)]
 noncomputable def restrSelfadjoint (f : A₁ →ₚ₁[ℂ] A₂) : selfAdjoint A₁ →ₗ[ℝ] selfAdjoint A₂ :=
   f.toPositiveLinearMap.restrSelfadjoint
@@ -245,7 +353,7 @@ theorem coe_restrSelfadjointComplex_apply (f : A₁ →ₚ₁[ℂ] ℂ) (x : sel
 @[simp]
 theorem restrSelfadjointComplex_one (f : A₁ →ₚ₁[ℂ] ℂ) : f.restrSelfadjointComplex 1 = 1 := by
   apply ofReal_injective
-  simp
+  simp? says simp only [coe_restrSelfadjointComplex_apply, selfAdjoint.val_one, map_one, ofReal_one]
 
 end UnitalPositiveLinearMap
 
