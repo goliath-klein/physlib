@@ -225,100 +225,15 @@ end selfAdjoint
 
 end UnitalPositiveLinearMap
 
--- section new
---
--- variable {A₁ A₂ R : Type*}
--- variable [Semiring R] [StarMul R]
--- variable [AddCommGroup A₁] [Module R A₁] [StarAddMonoid A₁] [StarModule R A₁]
--- variable [AddCommGroup A₂] [Module R A₂] [StarAddMonoid A₂] [StarModule R A₂]
--- variable [PartialOrder A₁] [PartialOrder A₂]
--- variable {F : Type*} [FunLike F A₁ A₂] [StarHomClass F A₁ A₂] [LinearMapClass F R A₁ A₂]
--- variable [StarHomClass F A₁ A₂]
---
--- variable (f : A₁ →ₚ[R] A₂) (x : A₁) (hx : IsSelfAdjoint x)
---
--- #check IsSelfAdjoint.map hx f
---
--- end new
-
 section CStarAlgebra
 
 variable {A₁ A₂ : Type*}
 
--- section test
---
--- #check IsSelfAdjoint.map
--- #check StarOrderedRing
--- #check CStarAlgebra
---
--- --variable [AddGroup A₁] [Star A₁] [PartialOrder A₁] [SelfAdjointDecompose A₁]
--- variable [Ring A₁] [StarRing A₁] [PartialOrder A₁] [StarOrderedRing A₁] [SelfAdjointDecompose A₁]
--- variable [AddCommGroup A₂] [Star A₂] [PartialOrder A₂]
--- variable {R : Type*} [Semiring R] [Module R A₁] [Module R A₂]
--- variable {F : Type*} [FunLike F A₁ A₂] [OrderHomClass F A₁ A₂] [LinearMapClass F R A₁ A₂]
---
--- theorem isSelfAdjoint_apply_of_isSelfAdjoint' (f : F) {x : A₁} (hx : IsSelfAdjoint x) :
---     IsSelfAdjoint (f x) := by
---   obtain ⟨b, c, hb, hc, rfl⟩ := hx.exists_nonneg_sub_nonneg
---   rw [isSelfAdjoint_iff, map_sub, star_sub, (map_nonneg f hb).star_eq, (map_nonneg f hc).star_eq]
---
--- -- variable {R : Type*} [NonUnitalSemiring R] [PartialOrder R] [StarRing R]
--- end test
-
-
 namespace PositiveLinearMap
-
-section test
-
-variable {A₁ A₂ F : Type*} [AddCommGroup A₁] [PartialOrder A₁]
-    [StarAddMonoid A₁] [SelfAdjointDecompose A₁] [Module ℂ A₁] [StarModule ℂ A₁]
-    [NonUnitalRing A₂] [PartialOrder A₂] [StarRing A₂]
-    [StarOrderedRing A₂] [Module ℂ A₂] [StarModule ℂ A₂]
-    [FunLike F A₁ A₂] [OrderHomClass F A₁ A₂] [LinearMapClass F ℂ A₁ A₂]
-
-theorem isSelfAdjoint_apply_of_isSelfAdjoint {x : A₁} (hx : IsSelfAdjoint x) (f : F) :
-    IsSelfAdjoint (f x) := .map hx f
-
--- theorem isSelfAdjoint_apply_of_isSelfAdjoint' (f : F) {x : A₁} (hx : IsSelfAdjoint x) :
---     IsSelfAdjoint (f x) := by
---   obtain ⟨b, c, hb, hc, rfl⟩ := hx.exists_nonneg_sub_nonneg
---   rw [isSelfAdjoint_iff, map_sub, star_sub, (map_nonneg f hb).star_eq, (map_nonneg f hc).star_eq]
---
---
--- --  choose b c hb hc hx using this
---   rw [isSelfAdjoint_iff, ← CFC.posPart_sub_negPart x, map_sub, star_sub,
---     (f.map_nonneg (CFC.posPart_nonneg x)).star_eq, (f.map_nonneg (CFC.negPart_nonneg x)).star_eq]
---
---
--- theorem isSelfAdjoint_apply_of_isSelfAdjoint (f : F) {x : A₁} (hx : IsSelfAdjoint x) :
---     IsSelfAdjoint (f x) := by
---   rw [isSelfAdjoint_iff, (map_star f x).symm, isSelfAdjoint_iff.mpr hx]
-
-end test
 
 variable [NonUnitalCStarAlgebra A₁] [NonUnitalCStarAlgebra A₂]
   [PartialOrder A₁] [StarOrderedRing A₁]
   [PartialOrder A₂] [StarOrderedRing A₂]
-
--- TBD: The proof uses `x⁺ - x⁻ = x`. This holds for every ordered vector space where the
--- order cone is full-dimensional. But as far as I can see, Mathlib has the statement only
--- for C^* algebras (`CFC.posPart_sub_negPart x`). For the time being, we state it in that
--- setting.
--- /-- Positive linear maps preserve self-adjoint elements of a C^* algebra. -/
--- @[simp]
--- theorem isSelfAdjoint_apply_of_isSelfAdjoint'' (f : A₁ →ₚ[ℂ] A₂) {x : A₁} (hx : IsSelfAdjoint x) :
---     IsSelfAdjoint (f x) := by
---   rw [isSelfAdjoint_iff, ← CFC.posPart_sub_negPart x, map_sub, star_sub,
---     (f.map_nonneg (CFC.posPart_nonneg x)).star_eq, (f.map_nonneg (CFC.negPart_nonneg x)).star_eq]
-
-#check StarHomClass
-
--- theorem isSelfAdjoint_apply_of_isSelfAdjoint'
---   {F : Type*} [FunLike F A₁ A₂] [StarHomClass F A₁ A₂] (f : F)
---   {x : A₁} (hx : IsSelfAdjoint x) :
---     IsSelfAdjoint (f x) := by
---   rw [isSelfAdjoint_iff, ← CFC.posPart_sub_negPart x, map_sub, star_sub,
---     (f.map_nonneg (CFC.posPart_nonneg x)).star_eq, (f.map_nonneg (CFC.negPart_nonneg x)).star_eq]
 
 open selfAdjoint
 
@@ -338,18 +253,11 @@ section Complex
 open Complex ComplexOrder
 
 /-- The map from self-adjoint complex numbers to real numbers as a unital positive linear map. -/
--- @[simps!]
+@[simps!]
 noncomputable def _root_.Complex.selfAdjointUPLM : selfAdjoint ℂ →ₚ₁[ℝ] ℝ where
   toLinearMap := Complex.selfAdjointEquiv.toLinearMap
   monotone' a b hab := by simp; gcongr
   map_one' := by simp
-
-@[simp]
-theorem _root_.Complex.coe_selfAdjointUPLM_apply (x : selfAdjoint ℂ) :
-  selfAdjointUPLM x = selfAdjointEquiv x := rfl
-
--- #check selfAdjointUPLM_apply
--- #check toLinearMap_selfAdjointUPLM_apply
 
 /-- A positive linear map into `ℂ` defines a positive linear map from the
 self-adjoint elements to `ℝ` -/
@@ -388,8 +296,10 @@ noncomputable def restrSelfadjointComplex (f : A₁ →ₚ₁[ℂ] ℂ) : selfAd
 @[simp, norm_cast]
 theorem coe_restrSelfadjointComplex_apply (f : A₁ →ₚ₁[ℂ] ℂ) (x : selfAdjoint A₁) :
     (f.restrSelfadjointComplex x : ℂ) = f (x : A₁) := by
-  have : IsSelfAdjoint (f x) := by simp
-  simpa [restrSelfadjointComplex] using (conj_eq_iff_re.mp this) -- TBD: fix defeq abuse
+  have : starRingEnd ℂ (f x) = f x := by
+    rw [← star_def, ← isSelfAdjoint_iff]
+    exact IsSelfAdjoint.map isSelfAdjoint f
+  simpa [restrSelfadjointComplex] using (conj_eq_iff_re.mp this)
 
 end UnitalPositiveLinearMap
 
