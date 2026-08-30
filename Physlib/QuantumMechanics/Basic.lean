@@ -173,14 +173,21 @@ theorem mem_selfAdjoint_iff_isSelfAdjoint {R : Type*} [AddGroup R] [StarAddMonoi
 variable {R A : Type*} [Semiring R] [StarMul R] [TrivialStar R]
   [AddCommGroup A] [Module R A] [StarAddMonoid A] [StarModule R A]
 
+@[simp]
+theorem submodule_mem_iff {x : A} : (x ∈ submodule R A) ↔ (x ∈ selfAdjoint A) := by
+  rfl
+
 /-- The linear equivalence that forgets the `Submodule` structure on the self-adjoint elements. -/
-@[simps!]
 def submoduleEquiv : selfAdjoint.submodule R A ≃ₗ[R] selfAdjoint A :=
   { Equiv.refl _ with map_add' _ _ := rfl, map_smul' _ _ := rfl }
 
 @[simp]
-theorem submodule_mem_iff {x : A} : (x ∈ submodule R A) ↔ (x ∈ selfAdjoint A) := by
-  rfl
+theorem coe_submoduleEquiv_apply {a : A} (h : a ∈ selfAdjoint.submodule R A) :
+    ↑(submoduleEquiv ⟨a, h⟩) = a := rfl
+
+ @[simp]
+ theorem coe_submoduleEquiv_symm_apply {a : A} (h : a ∈ selfAdjoint A) :
+     ↑((submoduleEquiv (R := R)).symm ⟨a, h⟩) = a := rfl
 
 variable [PartialOrder A]
 
@@ -198,8 +205,17 @@ variable {R A : Type*} [Semiring R] [StarMul R] [TrivialStar R]
 instance : One (submodule R A) :=
   ⟨⟨1, .one _⟩⟩
 
+ @[simp]
+ theorem submoduleEquiv_one : ↑(submoduleEquiv (R := R) (A := A) 1) = 1 := rfl
+
+#check val_one
+
+-- @[simp]
+-- theorem val_one_submodule : (1 : submodule R A) = ⟨(1 : A), by simp⟩ :=
+--   rfl
+
 @[simp]
-theorem val_one_submodule : ↑(1 : submodule R A) = (1 : selfAdjoint A) :=
+theorem val_one_submodule : ↑(1 : submodule R A) = (1 : A) :=
   rfl
 
 variable [PartialOrder A]
