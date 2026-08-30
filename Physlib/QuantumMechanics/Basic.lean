@@ -178,50 +178,25 @@ theorem submodule_mem_iff {x : A} : (x ∈ submodule R A) ↔ (x ∈ selfAdjoint
   rfl
 
 /-- The linear equivalence that forgets the `Submodule` structure on the self-adjoint elements. -/
-def submoduleEquiv : selfAdjoint.submodule R A ≃ₗ[R] selfAdjoint A :=
-  { Equiv.refl _ with map_add' _ _ := rfl, map_smul' _ _ := rfl }
-
--- @[simp]
--- theorem coe_submoduleEquiv_apply {a : A} (h : a ∈ selfAdjoint.submodule R A) :
---     ↑(submoduleEquiv ⟨a, h⟩) = a := rfl
-
-@[simp]
-theorem coe_submoduleEquiv_apply  (a : submodule R A) :
-    ↑(submoduleEquiv a) = (a : A) := by rfl
-
--- @[simp]
--- theorem coe_submoduleEquiv_symm_apply {a : A} (h : a ∈ selfAdjoint A) :
---     ↑((submoduleEquiv (R := R)).symm ⟨a, h⟩) = a := rfl
-
- @[simp]
- theorem coe_submoduleEquiv_symm_apply (a : selfAdjoint A) :
-     ↑((submoduleEquiv (R := R)).symm a) = (a : A) := rfl
+@[simps!]
+def submoduleEquiv : selfAdjoint.submodule R A ≃ₗ[R] selfAdjoint A where
+  toFun x := ⟨x.val, submodule_mem_iff.mp x.prop⟩
+  invFun x := ⟨x.val, submodule_mem_iff.mpr x.prop⟩
+  map_add' _ _ := by simp
+  map_smul' _ _ := by ext; simp
 
 variable [PartialOrder A]
 
 /-- Forgetting the `Submodule` structure as a positive linear map. -/
+@[simps!]
 def submodulePLM : submodule R A →ₚ[R] selfAdjoint A :=
   { selfAdjoint.submoduleEquiv.toLinearMap with monotone' a b hab := by simpa }
 
-@[simp]
-theorem submodulePLM_apply (x : submodule R A) : submodulePLM x = submoduleEquiv x := rfl
-
 variable (R) in
 /-- Inverse of `submodulePLM`. (There is no `PositiveLinearEquivalence` type) -/
+@[simps!]
 def submodulePLM_symm : selfAdjoint A →ₚ[R] submodule R A:=
   { selfAdjoint.submoduleEquiv.symm.toLinearMap with monotone' a b hab := by simpa }
-
-@[simp]
-theorem submodulePLM_symm_apply (x : selfAdjoint A) :
-    submodulePLM_symm R x = submoduleEquiv.symm x := rfl
-
--- @[simp]
--- theorem submodulePLM_submodulePM_symm (x : submodule R A) :
---     submodulePLM_symm R (submodulePLM x) = x := by simp
---
--- @[simp]
--- theorem submodulePLM_symm_submodulePM (x : selfAdjoint A) :
---     submodulePLM (submodulePLM_symm R x) = x := by simp
 
 variable {R A : Type*} [Semiring R] [StarMul R] [TrivialStar R]
   [Ring A] [StarRing A] [Module R A] [StarModule R A]
@@ -229,22 +204,22 @@ variable {R A : Type*} [Semiring R] [StarMul R] [TrivialStar R]
 instance : One (submodule R A) :=
   ⟨⟨1, .one _⟩⟩
 
-@[simp]
-theorem val_one_submodule : ↑(1 : submodule R A) = (1 : A) :=
-  rfl
-
- @[simp]
- theorem submoduleEquiv_one : ↑(submoduleEquiv (R := R) (A := A) 1) = 1 := rfl
+@[simp] theorem val_one_submodule : ↑(1 : submodule R A) = (1 : A) := rfl
+@[simp] theorem submoduleEquiv_one : ↑(submoduleEquiv (R := R) (A := A) 1) = 1 := rfl
+@[simp] theorem submoduleEquiv_symm_one : ↑(submoduleEquiv (R := R) (A := A).symm 1) = 1 := rfl
 
 variable [PartialOrder A]
 
 /-- Forgetting the `Submodule` structure as a unital positive linear map. -/
+@[simps!]
 def submoduleUPLM : submodule R A →ₚ₁[R] selfAdjoint A :=
-  { selfAdjoint.submoduleEquiv.toLinearMap with monotone' a b hab := by simpa, map_one' := by simp }
+  { submoduleEquiv.toLinearMap with monotone' a b hab := by simpa, map_one' := by simp }
 
 /-- Inverse of `submoduleUPLM`. (There is no `UnitalPositiveLinearEquivalence` type) -/
-def submoduleUPLM_symm : selfAdjoint A →ₚ[R] submodule R A:=
-  { selfAdjoint.submoduleEquiv.symm.toLinearMap with monotone' a b hab := by simpa }
+@[simps!]
+def submoduleUPLM_symm : selfAdjoint A →ₚ₁[R] submodule R A :=
+  { submoduleEquiv.symm.toLinearMap with monotone' a b hab := by simpa, map_one' := by simp }
+
 end selfAdjoint
 
 end UnitalPositiveLinearMap
@@ -263,23 +238,17 @@ variable [NonUnitalCStarAlgebra A₁] [NonUnitalCStarAlgebra A₂] [PartialOrder
 -- hold in any ordered vector space where the order cone is full-dimensional.
 -- For now, state this only for C^* algebras.
 /-- Positive linear maps preserve self-adjoint elements of a C^* algebra. -/
-@[simp] -- remove?
+@[simp]
 theorem isSelfAdjoint_apply_of_isSelfAdjoint (f : A₁ →ₚ[ℂ] A₂) {x : A₁} (hx : IsSelfAdjoint x) :
     IsSelfAdjoint (f x) := by
   rw [isSelfAdjoint_iff, ← CFC.posPart_sub_negPart x, map_sub, star_sub,
     (f.map_nonneg (CFC.posPart_nonneg x)).star_eq, (f.map_nonneg (CFC.negPart_nonneg x)).star_eq]
 
--- remove?
-theorem mem_selfAdjoint_apply_of_selfAdjoint (f : A₁ →ₚ[ℂ] A₂) (x : A₁)
-    (hx : x ∈ selfAdjoint.submodule ℝ A₁) : f x ∈ selfAdjoint.submodule ℝ A₂ := by
-  simp_all -- [isSelfAdjoint_apply_of_isSelfAdjoint]
-
 open selfAdjoint
 
 /-- A positive linear map defines a linear map between self-adjoint elements -/
 noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ :=
-  submodulePLM.comp <|
-    (f.restrict f.mem_selfAdjoint_apply_of_selfAdjoint).comp <| submodulePLM_symm ℝ
+  submodulePLM.comp <| (f.restrict (by simp_all)).comp <| submodulePLM_symm ℝ
 
 @[simp, norm_cast]
 theorem coe_restrSelfadjoint_apply (f : A₁ →ₚ[ℂ] A₂) (x : selfAdjoint A₁) :
