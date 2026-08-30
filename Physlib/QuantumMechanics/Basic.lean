@@ -143,31 +143,26 @@ variable {R E₁ E₂ : Type*} [Semiring R]
     [AddCommMonoid E₁] [PartialOrder E₁] [AddCommMonoid E₂] [PartialOrder E₂]
     [Module R E₁] [Module R E₂]
 
-section tst
+-- /-- Linear version of `OrderHom.Subtype.val` -/
+-- -- @[simps -fullyApplied]
+-- def Submodule.val (S : Submodule R E₁) : S →ₚ[R] E₁ where
+--   toOrderHom := OrderHom.Subtype.val (· ∈ S)
+--   map_add' := by simp
+--   map_smul' := by simp
+--
+-- @[simp]
+-- theorem Submodule.coe_val (S : Submodule R E₁) :
+--     ⇑(Submodule.val S) = OrderHom.Subtype.val ( · ∈ S) := rfl
+--
+-- theorem Submodule.val_apply {S : Submodule R E₁} (s : S) : Submodule.val S s = (s : E₁) := by
+--   simp
 
-/-- Linear version of `OrderHom.Subtype.val` -/
-@[simps -fullyApplied]
-def Submodule.val (S : Submodule R E₁) : S →ₚ[R] E₁ where
-  toOrderHom := OrderHom.Subtype.val (· ∈ S)
-  map_add' := by simp
-  map_smul' := by simp
+variable {S : Type*} [Semiring S] [Module S E₁] [Module S E₂] [LinearMap.CompatibleSMul E₁ E₂ S R]
 
-variable {S : Type*} [Semiring S]
-
-
-def Submodule.xxx (f : E₁ →ₚ[R] E₂) (S : Submodule R E₁) (T : Submodule R E₂) (h : ∀ s : S,  ) :
-
-variable (S : Submodule R E₁) (s : S)
-
-#check (s : E₁)
-#synth PartialOrder S
-
-#check OrderHom.Subtype.val
-#check PositiveLinearMap.Submodule.val S
-
-end tst
-
-#check Submodule
+def restrict (f : E₁ →ₚ[R] E₂) (F₁ : Submodule S E₁) (F₂ : Submodule S E₂) (h : ∀ x ∈ F₁, f x ∈ F₂) :
+    F₁ →ₚ[S] F₂ where
+  toLinearMap := (f.toLinearMap.restrictScalars S).restrict (by simpa)
+  monotone' a b h := f.monotone (by simpa)
 
 end Subtype.PositiveLinearMap
 
@@ -197,6 +192,8 @@ noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A�
   map_smul' m x := by ext; simp
   monotone' a b hab := by
     simp only [Subtype.mk_le_mk]
+    rw [← Submodule.val_apply (S := selfAdjoint A₁) a]
+
 
     sorry
 
