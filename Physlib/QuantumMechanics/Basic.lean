@@ -181,13 +181,21 @@ theorem submodule_mem_iff {x : A} : (x ∈ submodule R A) ↔ (x ∈ selfAdjoint
 def submoduleEquiv : selfAdjoint.submodule R A ≃ₗ[R] selfAdjoint A :=
   { Equiv.refl _ with map_add' _ _ := rfl, map_smul' _ _ := rfl }
 
+-- @[simp]
+-- theorem coe_submoduleEquiv_apply {a : A} (h : a ∈ selfAdjoint.submodule R A) :
+--     ↑(submoduleEquiv ⟨a, h⟩) = a := rfl
+
 @[simp]
-theorem coe_submoduleEquiv_apply {a : A} (h : a ∈ selfAdjoint.submodule R A) :
-    ↑(submoduleEquiv ⟨a, h⟩) = a := rfl
+theorem coe_submoduleEquiv_apply  (a : submodule R A) :
+    ↑(submoduleEquiv a) = (a : A) := by rfl
+
+-- @[simp]
+-- theorem coe_submoduleEquiv_symm_apply {a : A} (h : a ∈ selfAdjoint A) :
+--     ↑((submoduleEquiv (R := R)).symm ⟨a, h⟩) = a := rfl
 
  @[simp]
- theorem coe_submoduleEquiv_symm_apply {a : A} (h : a ∈ selfAdjoint A) :
-     ↑((submoduleEquiv (R := R)).symm ⟨a, h⟩) = a := rfl
+ theorem coe_submoduleEquiv_symm_apply (a : selfAdjoint A) :
+     ↑((submoduleEquiv (R := R)).symm a) = (a : A) := rfl
 
 variable [PartialOrder A]
 
@@ -195,9 +203,25 @@ variable [PartialOrder A]
 def submodulePLM : submodule R A →ₚ[R] selfAdjoint A :=
   { selfAdjoint.submoduleEquiv.toLinearMap with monotone' a b hab := by simpa }
 
+@[simp]
+theorem submodulePLM_apply (x : submodule R A) : submodulePLM x = submoduleEquiv x := rfl
+
+variable (R) in
 /-- Inverse of `submodulePLM`. (There is no `PositiveLinearEquivalence` type) -/
 def submodulePLM_symm : selfAdjoint A →ₚ[R] submodule R A:=
   { selfAdjoint.submoduleEquiv.symm.toLinearMap with monotone' a b hab := by simpa }
+
+@[simp]
+theorem submodulePLM_symm_apply (x : selfAdjoint A) :
+    submodulePLM_symm R x = submoduleEquiv.symm x := rfl
+
+-- @[simp]
+-- theorem submodulePLM_submodulePM_symm (x : submodule R A) :
+--     submodulePLM_symm R (submodulePLM x) = x := by simp
+--
+-- @[simp]
+-- theorem submodulePLM_symm_submodulePM (x : selfAdjoint A) :
+--     submodulePLM (submodulePLM_symm R x) = x := by simp
 
 variable {R A : Type*} [Semiring R] [StarMul R] [TrivialStar R]
   [Ring A] [StarRing A] [Module R A] [StarModule R A]
@@ -205,18 +229,12 @@ variable {R A : Type*} [Semiring R] [StarMul R] [TrivialStar R]
 instance : One (submodule R A) :=
   ⟨⟨1, .one _⟩⟩
 
- @[simp]
- theorem submoduleEquiv_one : ↑(submoduleEquiv (R := R) (A := A) 1) = 1 := rfl
-
-#check val_one
-
--- @[simp]
--- theorem val_one_submodule : (1 : submodule R A) = ⟨(1 : A), by simp⟩ :=
---   rfl
-
 @[simp]
 theorem val_one_submodule : ↑(1 : submodule R A) = (1 : A) :=
   rfl
+
+ @[simp]
+ theorem submoduleEquiv_one : ↑(submoduleEquiv (R := R) (A := A) 1) = 1 := rfl
 
 variable [PartialOrder A]
 
@@ -256,18 +274,17 @@ theorem mem_selfAdjoint_apply_of_selfAdjoint (f : A₁ →ₚ[ℂ] A₂) (x : A�
     (hx : x ∈ selfAdjoint.submodule ℝ A₁) : f x ∈ selfAdjoint.submodule ℝ A₂ := by
   simp_all -- [isSelfAdjoint_apply_of_isSelfAdjoint]
 
+open selfAdjoint
+
 /-- A positive linear map defines a linear map between self-adjoint elements -/
-@[simps! (attr := norm_cast)]
 noncomputable def restrSelfadjoint (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ :=
-  selfAdjoint.submodulePLM_symm.comp <|
-    (f.restrict f.mem_selfAdjoint_apply_of_selfAdjoint).comp selfAdjoint.submodulePLM
+  submodulePLM.comp <|
+    (f.restrict f.mem_selfAdjoint_apply_of_selfAdjoint).comp <| submodulePLM_symm ℝ
 
-#check restrSelfadjoint_apply_coe
-
-/-- A positive linear map defines a linear map between self-adjoint elements -/
-@[simps! (attr := norm_cast)]
-noncomputable def restrSelfadjoint' (f : A₁ →ₚ[ℂ] A₂) : selfAdjoint A₁ →ₚ[ℝ] selfAdjoint A₂ :=
-  f.restrict f.mem_selfAdjoint_apply_of_selfAdjoint
+@[simp, norm_cast]
+theorem coe_restrSelfadjoint_apply (f : A₁ →ₚ[ℂ] A₂) (x : selfAdjoint A₁) :
+    ((f.restrSelfadjoint x) : A₂) = f (x : A₁) := by
+  simp [restrSelfadjoint]
 
 
 -- /-- Positive linear maps preserve self-adjoint elements of a C^* algebra. -/
