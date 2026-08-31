@@ -5,8 +5,8 @@ Authors: David Gross
 -/
 module
 
-public import Mathlib
 public import Physlib.QuantumMechanics.Basic.PositiveLinearMap.Restrict
+public import Physlib.QuantumMechanics.Basic.PositiveLinearMap.Trace
 
 /-!
 
@@ -36,10 +36,10 @@ notation " 𝓢[" A "] " => A →ₚ₁[ℂ] ℂ
 
 end Notation
 
-section ofVec
-
 open ComplexOrder ContinuousLinearMap
 open scoped InnerProductSpace
+
+section ofVec
 
 variable {H 𝕜 : Type*} [RCLike 𝕜] [NormedAddCommGroup H] [InnerProductSpace 𝕜 H]
 
@@ -55,55 +55,31 @@ def PositiveLinearMap.ofVec (ψ : H) : 𝓟[𝕜, H →L[𝕜] H] where
 def UnitalPositiveLinearMap.ofVec {ψ : H} (h : ‖ψ‖ = 1) : 𝓢[𝕜, H →L[𝕜] H] :=
   { PositiveLinearMap.ofVec ψ with map_one' := by simp [h] }
 
--- Restrict to finite dimensions, until trace class implementation works better.
-variable [FiniteDimensional 𝕜 H]
-
-def ContinuousLinearMap.traceₚ := sorry
-
-#check ContinuousLinearMap.trace
-#check LinearMap.trace
-#check mul_add
-
-variable (x y z : H →ₗ[𝕜] H)
-example : x * (y + z) = x * y + x * z := by
-  rw [mul_add]
-
--- Use `X • ρ` (rather than `X * ρ`), as it generalizes to the action of bounded operators
--- on trace-class operators.
-@[simps apply]
-def PositiveLinearMap.ofPosOp {ρ : H →L[𝕜] H} (h : ρ.IsPositive) : 𝓟[𝕜, H →L[𝕜] H] where
-  toFun x := (x • ρ).toLinearMap.trace 𝕜 H
-  map_add' x y := by simp [add_mul, map_add]
-  map_smul' x y := by simp
-  monotone' x y hxy := by
-    simp
-
-  --  simpa [inner_sub_right] using ((le_def x y).mp hxy).inner_nonneg_right ψ
-
 end ofVec
 
-section EuclideanSpace
+section ofDensity
 
-#check EuclideanSpace
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
-open ComplexOrder
+namespace UnitalPositiveLinearMap
 
-variable {𝕜 n : Type*} [RCLike 𝕜] [Fintype n] -- [DecidableEq n]
+variable {ρ : H →L[ℂ] H} (hpos : 0 ≤ ρ) (hnorm : (ρ : H →ₗ[ℂ] H).trace ℂ H = 1)
 
-notation " 𝓔[" 𝕜 ", "  n "] " => EuclideanSpace 𝕜 n
+/-- A trace-one positive linear map defines a state -/
+noncomputable def ofDensity : 𝓢[H →L[ℂ] H] :=
+  { ρ.traceMulOpₚ with map_one' := by simp_all }
 
-#check ContinuousLinearMap.IsPositive
+@[simp]
+theorem ofDensity_apply {ρ : H →L[ℂ] H} (hpos : 0 ≤ ρ)
+    (hnorm : (ρ : H →ₗ[ℂ] H).trace ℂ H = 1) (x : H →L[ℂ] H) :
+    ofDensity hpos hnorm x = (↑x * ↑ρ : H →ₗ[ℂ] H).trace ℂ H :=
+  ρ.traceMulOpₚ_apply_of_nonneg hpos x
 
-@[simps apply]
-def PositiveLinearMap.ofPosOp (x : 𝓔[𝕜, n] →L[𝕜] 𝓔[𝕜, n]) : 𝓟[𝕜, 𝓔[𝕜, n] →L[𝕜] 𝓔[𝕜, n]] where
-  toFun x := ⟪ψ, x • ψ⟫_𝕜
-  map_add' x y := by simp [inner_add_right]
-  map_smul' x y := by simp [inner_smul_right]
-  monotone' x y hxy := by
-    simpa [inner_sub_right] using ((le_def x y).mp hxy).inner_nonneg_right ψ
+example {ρ : H →L[ℂ] H} (hpos : 0 ≤ ρ) (hnorm : (ρ : H →ₗ[ℂ] H).trace ℂ H = 1) :
+    ofDensity hpos hnorm 1 = 1 :=
+  map_one _
 
-
-end EuclideanSpace
+end ofDensity.UnitalPositiveLinearMap
 
 section Example
 
