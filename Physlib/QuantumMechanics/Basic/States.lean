@@ -36,6 +36,8 @@ notation " 𝓢[" A "] " => A →ₚ₁[ℂ] ℂ
 
 end Notation
 
+section ofVec
+
 open ComplexOrder ContinuousLinearMap
 open scoped InnerProductSpace
 
@@ -52,6 +54,8 @@ noncomputable def PositiveLinearMap.ofVec (ψ : H) : 𝓟[𝕜, H →L[𝕜] H] 
 @[simps! apply]
 noncomputable def UnitalPositiveLinearMap.ofVec {ψ : H} (h : ‖ψ‖ = 1) : 𝓢[𝕜, H →L[𝕜] H] :=
   { PositiveLinearMap.ofVec ψ with map_one' := by simp [h] }
+
+end ofVec
 
 section Example
 
