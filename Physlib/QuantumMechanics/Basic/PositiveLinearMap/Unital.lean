@@ -5,6 +5,7 @@ Authors: David Gross
 -/
 module
 
+public import Mathlib
 public import Mathlib.Algebra.Order.Module.PositiveLinearMap
 
 /-!
