@@ -71,7 +71,7 @@ instance : LinearMapClass (E₁ →ₚ₁[R] E₂) R E₁ E₂ where
   map_smulₛₗ f := f.toLinearMap.map_smul'
 
 instance : OrderHomClass (E₁ →ₚ₁[R] E₂) E₁ E₂ where
-  map_rel f := fun {_ _} hab => f.monotone' hab
+  map_rel f {_ _} hab := f.monotone' hab
 
 instance : OneHomClass (E₁ →ₚ₁[R] E₂) E₁ E₂ where
   map_one f := f.map_one'
@@ -85,7 +85,6 @@ theorem coe_toPositiveLinearMap (f : E₁ →ₚ₁[R] E₂) : (f.toPositiveLine
 example (f : E₁ →ₚ₁[R] E₂) : f.toLinearMap 1 = 1 := by
   simp
 
--- TBD
 initialize_simps_projections UnitalPositiveLinearMap (toFun → apply, as_prefix toLinearMap)
 
 @[ext]
