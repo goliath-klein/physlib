@@ -85,7 +85,7 @@ def submoduleUPLM_symm : selfAdjoint A →ₚ₁[R] submodule R A :=
 
 end selfAdjoint
 
-open Complex ComplexOrder
+open ComplexOrder
 
 /-- The map from self-adjoint complex numbers to real numbers as a unital positive linear map. -/
 @[simps!]

@@ -55,16 +55,61 @@ def PositiveLinearMap.ofVec (ψ : H) : 𝓟[𝕜, H →L[𝕜] H] where
 def UnitalPositiveLinearMap.ofVec {ψ : H} (h : ‖ψ‖ = 1) : 𝓢[𝕜, H →L[𝕜] H] :=
   { PositiveLinearMap.ofVec ψ with map_one' := by simp [h] }
 
+-- Restrict to finite dimensions, until trace class implementation works better.
+variable [FiniteDimensional 𝕜 H]
+
+def ContinuousLinearMap.traceₚ := sorry
+
+#check ContinuousLinearMap.trace
+#check LinearMap.trace
+#check mul_add
+
+variable (x y z : H →ₗ[𝕜] H)
+example : x * (y + z) = x * y + x * z := by
+  rw [mul_add]
+
+-- Use `X • ρ` (rather than `X * ρ`), as it generalizes to the action of bounded operators
+-- on trace-class operators.
+@[simps apply]
+def PositiveLinearMap.ofPosOp {ρ : H →L[𝕜] H} (h : ρ.IsPositive) : 𝓟[𝕜, H →L[𝕜] H] where
+  toFun x := (x • ρ).toLinearMap.trace 𝕜 H
+  map_add' x y := by simp [add_mul, map_add]
+  map_smul' x y := by simp
+  monotone' x y hxy := by
+    simp
+
+  --  simpa [inner_sub_right] using ((le_def x y).mp hxy).inner_nonneg_right ψ
+
 end ofVec
+
+section EuclideanSpace
+
+#check EuclideanSpace
+
+open ComplexOrder
+
+variable {𝕜 n : Type*} [RCLike 𝕜] [Fintype n] -- [DecidableEq n]
+
+notation " 𝓔[" 𝕜 ", "  n "] " => EuclideanSpace 𝕜 n
+
+#check ContinuousLinearMap.IsPositive
+
+@[simps apply]
+def PositiveLinearMap.ofPosOp (x : 𝓔[𝕜, n] →L[𝕜] 𝓔[𝕜, n]) : 𝓟[𝕜, 𝓔[𝕜, n] →L[𝕜] 𝓔[𝕜, n]] where
+  toFun x := ⟪ψ, x • ψ⟫_𝕜
+  map_add' x y := by simp [inner_add_right]
+  map_smul' x y := by simp [inner_smul_right]
+  monotone' x y hxy := by
+    simpa [inner_sub_right] using ((le_def x y).mp hxy).inner_nonneg_right ψ
+
+
+end EuclideanSpace
 
 section Example
 
 open UnitalPositiveLinearMap
 
-variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-
--- TBD: Currently required for `StarRing (H →L[ℂ] H)`. Should not be necessary.
-variable [CompleteSpace H]
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
 /-- The restriction of a state to self-adjoint elements, giving real-valued results -/
 example (ψ : H) (h : ‖ψ‖ = 1) :
